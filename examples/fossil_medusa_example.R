@@ -1,4 +1,4 @@
-#source("fossilMEDUSA_working.R")
+# WHALE EXAMPLE
 library(fossilMEDUSA)
 
 load("data/whale.Rdata")
@@ -21,4 +21,48 @@ whales.f.min <- runFossilMEDUSA(phy=whale.tree, richness=whale.richness, model.l
 whales.extant <- runFossilMEDUSA(phy=whale.tree, richness=whale.ext.richness, model.limit=8, est.extinction=T)
 
 #summarize results
+
 summarize.MEDUSA(whales.f.min)
+summarize.MEDUSA(whales.f.exact)
+summarize.MEDUSA(whales.extant)
+
+
+# compare to geiger medusa: should match whales.extant exactly
+library(geiger)
+mm<-medusa(phy=whale.tree, richness=whale.ext.richness, criterion="aicc", model="bd")
+plot(mm)
+
+# PUFFER EXAMPLE
+
+load("data/puffer.Rda")
+
+puffer.f.exact<-runFossilMEDUSA(pufferTree, pufferRichness, est.extinction=T, model.limit=4)
+puffer.f.min<-runFossilMEDUSA(pufferTree, pufferRichness, est.extinction=T, model.limit=4, fossil.minimum=T)
+
+summarize.MEDUSA(puffer.f.exact)
+summarize.MEDUSA(puffer.f.min)
+
+# compare to standard MEDUSA
+mm<-medusa(pufferTree, pufferRichness, criterion="aicc", model="bd")
+plot(mm)
+
+# MUSTELID EXAMPLE
+
+load("data/mustelid.Rdata")
+
+mustelid.f.extant<-runFossilMEDUSA(mustelid.tree, mustelid.ext.richness, est.extinction=T, model.limit=6)
+mustelid.f.exact<-runFossilMEDUSA(mustelid.tree, mustelid.richness, est.extinction=T, model.limit=6)
+mustelid.f.min<-runFossilMEDUSA(mustelid.tree, mustelid.richness, est.extinction=T, model.limit=6, fossil.minimum=T)
+
+summarize.MEDUSA(mustelid.f.extant)
+summarize.MEDUSA(mustelid.f.exact)
+summarize.MEDUSA(mustelid.f.min)
+
+# compare to standard MEDUSA
+mm<-medusa(mustelid.tree, mustelid.ext.richness, criterion="aicc", model="bd")
+plot(mm)
+
+# FUNGUS EXAMPLE
+
+
+
