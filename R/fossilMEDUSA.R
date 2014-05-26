@@ -4,6 +4,8 @@
 #' 
 #' @docType package
 #' @author Luke J. Harmon, Joseph W. Brown, Rich FitzJohn, Mike Alfaro
-#' @imports ape, geiger, multicore
+#' @import ape
+#' @import geiger
+#' @import multicore
 #' @name fossilMEDUSA
 NULL

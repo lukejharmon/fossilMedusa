@@ -16,7 +16,8 @@
 #' @param fossil.minimum Treat fossils as minimum diversity estimates? If F, numbers are treated as true estimates
 #' @param model.limit Maximum number of split models to consider
 #' @param epsilon.value Input fixed epsilon value; if NULL, then epsilon is estimated
-#' @param mc Use multicore or not  
+#' @param mc Use multicore or not 
+#' @param ... other arguments; currently unused  
 #' @return List with elements
 #'  $models, which contains:
 #'     $par: i x 2 matrix (for birth-death; i x 1 for pure-birth); the jth row contains 
@@ -828,6 +829,7 @@ plot.AIC.models <- function (all.res)
 # Works just as well as the one above
 plot.AIC.alt <- function (all.res)
 {
+  ylim <- c(min(all.res[,"AIC"],all.res[,"AICc"]), max(all.res[,"AIC"],all.res[,"AICc"]))
 	plot(all.res[,"N.Param"],all.res[,"AICc"], xlab="Number of Parameters", ylab="Model Fit", ylim=ylim, type="l", col="blue")
 	points(all.res[,"N.Param"],all.res[,"AICc"], col="blue", pch=21, bg="white")
 	par("new"=TRUE)

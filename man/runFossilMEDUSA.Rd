@@ -23,6 +23,8 @@ runFossilMEDUSA(phy, richness = NULL, fossil.richness = NULL,
 \item{epsilon.value}{Input fixed epsilon value; if NULL, then epsilon is estimated}
 
 \item{mc}{Use multicore or not}
+
+\item{...}{other arguments; currently unused}
 }
 \value{
 List with elements
