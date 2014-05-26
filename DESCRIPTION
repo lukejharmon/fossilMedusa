@@ -6,8 +6,9 @@ Date: 2014-05-26
 Author: Luke Harmon, Mike Alfaro, Joseph Brown, Graham Slater, and Rich FitzJohn
 Maintainer: Luke Harmon <lukejharmon@gmail.com>
 Description: run fossilMEDUSA
-License: Apache
+License: GPL (>= 2)
 Depends:
     ape,
     geiger,
     multicore
+Roxygen: list(wrap = FALSE)
