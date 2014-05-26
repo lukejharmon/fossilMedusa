@@ -35,45 +35,12 @@
 #' used for incompletely-sampled clades which requiring pruning.
 #' 
 
-
-#library(ape)
-#library(multicore)
-#library(geiger)
-
-## *NOTE* Annoying number of comments WILL be removed!
-
 ## *NOTE* Fossil observation currently limited to once per pendant edge.
 ##   This will be generalized (or at least extended) eventually...
 
-## All heavy-lifting provided by Rich FitzJohn, who basically rewrote the original
-## runMEDUSA, making it much (much) faster while correcting a problem with the
-## calculated likelihoods. JWB added code to allow for the incorporation of fossil
-## richness information, and generally bastardized things.
-
-## A few problems with FitzJohn code:
-##  1. did not prune taxa with absence of richness information - FIXED
-##  2. assumed richness ordering == phy$tip.label ordering - FIXED
-##  3. no calculation of AIC(c); hence no selection of optimal piecewise model - FIXED
-##  4. problems with optimization - WORKING
-##  5. no option for pure-birth - WORKING
-##  6. calculations in terms of b & d; want instead r & epsilon (e.g. pass in epsilon, estimate r) - FIXED
-##  7. absence of references to 'Fucktard' - FIXED and FIXED!
-
-## Features (to be) added: specify epsilon (for every piecewise model), estimate r.
-## An argument 'epsilon.value' is passed; if NULL, normal MEDUSA is performed.
-
 ## TO-DO:
- # 0. fossil counts in pendant edges - DONE (but slow when fossil.minimum==T)
- # 1. option for no extinction (i.e. pure birth) (lower priority)
  # 2. set epsilon to some value (for all piecewise models), estimate r (num.par = 2*num.models - 1)
- # 3. estimate epsilon i.e. standard MEDUSA - DONE
- # 4. stop criterion for number of models fitted - DONE
- # 5. make pretty summary figures (lower priority) - DONE
  # 6. solve optimzation problem - pass in vector of values  - WORKING
- # 7. implement cutAtStem=FALSE (very low priority) # abandon?!?
- # 8. flexible input format - DONE
- # 9. implement better count of parameters for AIC and AICc and how to count fossils in sample size - DONE
- # 10. change b/d -> r/epsilon - DONE
  # 11. for birth-death models, check if break is at tip; if so, only estimate r (factor into AIC)
 
 runFossilMEDUSA <- function(phy, richness=NULL, fossil.richness=NULL, est.extinction=T, fossil.minimum=F, model.limit=20, epsilon.value=NULL, mc=F, ...)
@@ -920,7 +887,7 @@ logspace_add <- function(logx, logy)
 #  $anc: a list of all ancestors; for summarizing results
 #  $model.summary: data.frame listing considered models, likelihoods, number of paramters, AICc, AICc, Akaike weights.
 
-summarize.MEDUSA <- function(results, model=NULL, threshold=0, aic=F, plotTree=T, time=T, cex=0.5)
+summarize.MEDUSA <- function(results, model=NULL, threshold=NULL, aic=F, plotTree=T, time=T, cex=0.5)
 {
 # Desirables:
 #  1. table listing parameter values of selected model
@@ -942,11 +909,14 @@ summarize.MEDUSA <- function(results, model=NULL, threshold=0, aic=F, plotTree=T
 	{
 		model.id <- model
 	} else {
+    
+    if(is.null(threshold)) threshold<-geiger:::.threshold.medusa(phy)
+    
 		if (threshold == 0)
 		{
 			model.id <- which.min(unlist(lapply(fit, "[[", criterion)))
 		} else {   # Find best model using threshold criterion
-			model.id <- 1
+      model.id <- 1
 			while (1)
 			{
 				if ((model.id + 1) > length(fit)) break;
