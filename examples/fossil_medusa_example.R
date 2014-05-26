@@ -1,4 +1,6 @@
 #source("fossilMEDUSA_working.R")
+library(fossilMEDUSA)
+
 #load("data/Whale.Rdata")
 #load("Mustelids.Rdata")
 #make sure your richness file looks like this:
