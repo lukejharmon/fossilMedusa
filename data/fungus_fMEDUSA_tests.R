@@ -1,6 +1,6 @@
-source("fossilMEDUSA_working.R")
-load("Whale.Rdata")
-load("Mustelids.Rdata")
+#source("fossilMEDUSA_working.R")
+#load("Whale.Rdata")
+#load("Mustelids.Rdata")
 
 
 # Run data treating fossils as exact counts, minimum counts, or not at all

@@ -1,6 +1,6 @@
-source("fossilMEDUSA_working.R")
-load("Whale.Rdata")
-load("Mustelids.Rdata")
+#source("fossilMEDUSA_working.R")
+#load("Whale.Rdata")
+#load("Mustelids.Rdata")
 #make sure your richness file looks like this:
 whale.richness
 #there are five columns named taxon, exemplar, n.taxa, n.fossils, f.time
