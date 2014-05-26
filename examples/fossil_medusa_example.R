@@ -61,6 +61,3 @@ summarize.MEDUSA(mustelid.f.min)
 # compare to standard MEDUSA
 mm<-medusa(mustelid.tree, mustelid.ext.richness, criterion="aicc", model="bd")
 plot(mm)
-
-
-

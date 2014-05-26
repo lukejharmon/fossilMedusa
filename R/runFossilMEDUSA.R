@@ -910,7 +910,7 @@ summarize.MEDUSA <- function(results, model=NULL, threshold=NULL, aic=F, plotTre
 		model.id <- model
 	} else {
     
-    if(is.null(threshold)) threshold<-geiger:::.threshold.medusa(phy)
+    if(is.null(threshold)) threshold<-.threshold.medusa(phy)
     
 		if (threshold == 0)
 		{
@@ -1055,4 +1055,23 @@ pruneTree <- function(phy, richness)
 		phy <- prunedTree
 	}
 	return(phy)
+}
+
+.threshold.medusa<-function (phy) 
+{
+    if ("multiPhylo" %in% class(phy)) {
+        phy <- phy[[1]]
+    }
+    N <- Ntip(phy)
+    a <- -35.9410523803326
+    b <- 6.7372587299747
+    c <- -0.100615083407549
+    Offset <- 27.5166786643334
+    y <- a * (N - b)^c + Offset
+    if (y < 0) {
+        y <- 0
+    }
+    cat("Appropriate AICc threshold for tree of ", N, " tips is: ", 
+        y, ".\n\n", sep = "")
+    return(y)
 }
