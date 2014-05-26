@@ -62,7 +62,5 @@ summarize.MEDUSA(mustelid.f.min)
 mm<-medusa(mustelid.tree, mustelid.ext.richness, criterion="aicc", model="bd")
 plot(mm)
 
-# FUNGUS EXAMPLE
-
 
 
