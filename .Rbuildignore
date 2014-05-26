@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.gitignore
+^\.Rbuildignore
+^\.Rhistory
+.travis.yml
+.git
