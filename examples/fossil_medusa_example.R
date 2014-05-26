@@ -1,8 +1,8 @@
 #source("fossilMEDUSA_working.R")
-#load("Whale.Rdata")
+#load("data/Whale.Rdata")
 #load("Mustelids.Rdata")
 #make sure your richness file looks like this:
-whale.richness
+#whale.richness
 #there are five columns named taxon, exemplar, n.taxa, n.fossils, f.time
 # taxon is the name of the exact tip in the tree
 #exemplar is the name of the group that tip represents
@@ -14,13 +14,13 @@ whale.richness
 
 # Run data treating fossils as exact counts, minimum counts, or not at all
 
-whales.f.exact <- runFossilMEDUSA(phy=whale.tree, richness=whale.richness, model.limit=8, fossil.minimum=F)
+#whales.f.exact <- runFossilMEDUSA(phy=whale.tree, richness=whale.richness, model.limit=8, fossil.minimum=F)
 
 #minimum counts, 
-whales.f.min <- runFossilMEDUSA(phy=whale.tree, richness=whale.richness, model.limit=8, fossil.minimum=T)
+#whales.f.min <- runFossilMEDUSA(phy=whale.tree, richness=whale.richness, model.limit=8, fossil.minimum=T)
 #or not at all (no fossil data used to calculate richness)
 
-whales.extant <- runFossilMEDUSA(phy=whale.tree, richness=whale.ext.richness, model.limit=8, est.extinction=T)
+#whales.extant <- runFossilMEDUSA(phy=whale.tree, richness=whale.ext.richness, model.limit=8, est.extinction=T)
 
 #summarize results
-summarize.MEDUSA(whales.f.min)
+#summarize.MEDUSA(whales.f.min)
