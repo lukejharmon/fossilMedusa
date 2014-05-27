@@ -624,9 +624,12 @@ getFossilDtt<-function(dd) {
 }
 
 getFullDtt<-function(dd, t) {
-  if(dim(dd)[1]==0) { # one tip, no fossils
+  if(is.null(dim(dd))) { # just one fossil
     times<-sort(as.numeric(dd[2:3]))
-    nd<-c(1, 0)  
+    nd<-c(1, 1)
+  } else if(dim(dd)[1]==0) { # one tip, no fossils
+    times<-sort(as.numeric(dd[2:3]))
+    nd<-c(1, 1)  
   } else {
     times<-sort(as.numeric(dd[,2:3]))
     nd<-numeric(length(times))

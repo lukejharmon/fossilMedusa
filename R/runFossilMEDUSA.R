@@ -1065,8 +1065,8 @@ pruneTree <- function(phy, richness)
     if ("multiPhylo" %in% class(phy)) {
         phy <- phy[[1]]
     }
-    N <- Ntip(phy)
-    if(N < 7) stop("Medusa only works with trees that have 7 or more tip clades")
+    N <- Ntip(phy)*2
+    if(N < 4) stop("Medusa only works with trees that have 4 or more tip clades")
     
     a <- -35.9410523803326
     b <- 6.7372587299747
