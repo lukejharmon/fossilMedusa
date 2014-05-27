@@ -473,7 +473,7 @@ collapseTreeForMedusa<-function(phy, timeFraction=0.5, endClades=0) {
 			collapseNode<-names(bt[nodeOrder])[1]
 
 		}
-		ns<-node.leaves(phy, collapseNode)
+		ns<-node.leaves(phy, as.numeric(collapseNode))
 		whichTip<-which(phy$tip.label==ns[1])
 		whichCollapse<-which(phy$tip.label %in% ns[-1])
 		phenotype[whichTip]<-phenotype[whichTip]+sum(phenotype[whichCollapse])
@@ -484,7 +484,6 @@ collapseTreeForMedusa<-function(phy, timeFraction=0.5, endClades=0) {
 		phy$tip.label[whichTip]<-paste(ns, collapse=".")
 		for(j in 2:length(ns))
 			phy<-drop.tip(phy, ns[j])
-		
 	}
 
 	phy$phenotype<-phenotype
@@ -518,22 +517,29 @@ summaryChanges<-function(phy, branchChanges, ...) {
 	
 collapseTreeAndFossils<-function(data, timeFraction=0.5, endClades=0) {
 	
+  # First, collapse the tree following timeFraction and/or endClades
+  # using collapseTreeForMedusa
 	fullTree<-data$tree
-	allC<-getAllClades(fullTree)
-	allCSize<-numeric(length(allC))
-	for(i in 1:length(allC)) allCSize[i]<-length(allC[[i]])
-
 	survTree<-prune.extinct.taxa(fullTree)
 	allSurvivors<-survTree$tip.label
-	
 	meduTree<-collapseTreeForMedusa(survTree, timeFraction, endClades)
 	
+  # Next we will try to get fossil data for within 
+  # the triangle clades
+  
+  # Get all clades from the full tree
+	allC<-getAllClades(fullTree)
+  # measure their size
+	allCSize<-numeric(length(allC))
+	for(i in 1:length(allC)) allCSize[i]<-length(allC[[i]])
+  
+  # calculate fossil diversity throuth time
 	fullClade<-list()
-	Nl<-numeric(length(phy$tip.label))
-	Ne<-numeric(length(phy$tip.label))
+	Nl<-numeric(length(meduTree$tip.label))
+	Ne<-numeric(length(meduTree$tip.label))
 	
-	fossilDtt<-list()
-	for(i in 1:length(phy$tip.label)) {
+	fossilDtt<-vector("list", length=length(meduTree$tip.label))
+	for(i in 1:length(meduTree$tip.label)) {
 		tip<-meduTree$tip.label[i]
 		clade<-strsplit(tip, split="\\.")[[1]]
 		notInClade<-!(allSurvivors %in% clade)
@@ -553,50 +559,59 @@ collapseTreeAndFossils<-function(data, timeFraction=0.5, endClades=0) {
 		aa<-data$app[m,]
 		fossilDtt[[i]]<-getFossilDtt(aa)
 	}	
+  length(fossilDtt)<-length(meduTree$tip.label)
+	if(!is.null(data$branchChanges)) { # mark branch changes
+	  bc<-data$branchChanges
+	  newbc<-bc
+	  newbc<-cbind(newbc, rep(0, nrow(bc)))
+	  colnames(newbc)<-c(colnames(bc), "isInTriangle")
 	
-	bc<-data$branchChanges
-	newbc<-bc
-	newbc<-cbind(newbc, rep(0, nrow(bc)))
-	colnames(newbc)<-c(colnames(bc), "isInTriangle")
-	
-	allM<-getAllClades(meduTree)
-	for(i in 1:nrow(branchChanges)) {
-		t1<-node.leaves(fullTree, bc[i,1])
-		ok<-rep(F, length(allM))
-		size<-numeric(length(allM))
-		for(j in 1:length(allM)) {
-			tt<-strsplit(allM[[j]], split="\\.")
-			taxa<-tt[[1]]
-			if(length(tt)>1) for(k in 2:length(tt)) taxa<-c(taxa, tt[[k]])
-			size[j]<-length(taxa)
-			if(sum(!(taxa %in% t1))==0) ok[j]<-T
-			}
-		if(sum(ok)==0) { #The change is inside one of the triangles
-		  newbc[i,6]<-1
-		  ok[]<-F
+	  allM<-getAllClades(meduTree)
+	  for(i in 1:nrow(branchChanges)) {
+		  t1<-node.leaves(fullTree, bc[i,1])
+		  ok<-rep(F, length(allM))
+		  size<-numeric(length(allM))
 		  for(j in 1:length(allM)) {
-			tt<-strsplit(allM[[j]], split="\\.")
-			taxa<-tt[[i]]
-			if(length(tt)>1) for(k in 2:length(tt)) taxa<-c(taxa, tt[[k]])
-			size[j]<-length(taxa)
-			if(sum(taxa %in% t1)!=0) ok[j]<-T
-		  }
-		}	
-		large<-max(size[ok])
-		newCladeNumber<-which(size==max(size[ok]) & ok)
-		newbc[i,1]<-newCladeNumber
-		
+			  tt<-strsplit(allM[[j]], split="\\.")
+			  taxa<-tt[[1]]
+			  if(length(tt)>1) for(k in 2:length(tt)) taxa<-c(taxa, tt[[k]])
+			  size[j]<-length(taxa)
+			  if(sum(!(taxa %in% t1))==0) ok[j]<-T
+			}
+		  if(sum(ok)==0) { #The change is inside one of the triangles
+		    newbc[i,6]<-1
+		    ok[]<-F
+		    for(j in 1:length(allM)) {
+			    tt<-strsplit(allM[[j]], split="\\.")
+			    taxa<-tt[[i]]
+			    if(length(tt)>1) for(k in 2:length(tt)) taxa<-c(taxa, tt[[k]])
+			    size[j]<-length(taxa)
+			    if(sum(taxa %in% t1)!=0) ok[j]<-T
+		    }
+		  }	
+		  large<-max(size[ok])
+		  newCladeNumber<-which(size==max(size[ok]) & ok)
+		  newbc[i,1]<-newCladeNumber
+	  }
+	  data$branchChanges<-newbc
 	}
-	
+	return(list(meduTree=meduTree, fossilDtt=fossilDtt))
 }
 
 getFossilDtt<-function(dd) {
-	times<-sort(as.numeric(dd[,2:3]))
-	nd<-numeric(length(times))
-	for(i in 1:length(times)) 
-		nd[i]<-sum(dd[,2]<=times[i] & dd[,3]>times[i])
-	cbind(times, nd)
+  if(is.null(dim(dd))) { # just one fossil
+    times<-sort(as.numeric(dd[2:3]))
+    nd<-c(1, 0)
+	} else if(dim(dd)[1]==0) { # no fossils
+    return(NULL)
+  } else {
+    times<-sort(as.numeric(dd[,2:3]))
+	  nd<-numeric(length(times))
+	  for(i in 1:length(times)) 
+		  nd[i]<-sum(dd[,2]<=times[i] & dd[,3]>times[i])
 	}
+	cbind(times, nd)
+}
 
 getAllClades<-function(phy) 
 {
@@ -640,3 +655,28 @@ prune.extinct.taxa<-function (phy, tol = .Machine$double.eps^0.5)
     res
 }
 
+plotDtt<-function(dtt) {
+  
+  xrange<-NULL
+  yrange<-NULL
+  for(i in 1:length(dtt)) {
+    if(!is.null(dtt[[i]])) {
+      tr<-range(dtt[[i]][,1])
+      dr<-range(dtt[[i]][,2])
+      xrange<-range(c(tr, xrange))
+      yrange<-range(c(dr, yrange))
+    }
+  }
+  
+  plot(NULL, xlim=xrange, ylim=yrange)
+  for(i in 1:length(dtt)) {
+    if(!is.null(dtt[[i]])) {
+      x<-dtt[[i]][,1]
+      y<-dtt[[i]][,2]
+      y<-c(y[1], y)
+      s<-stepfun(x,y)
+      lines(s, do.points=F, col=i)
+    }
+  }
+  
+}
