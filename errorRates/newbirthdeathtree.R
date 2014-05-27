@@ -539,6 +539,8 @@ collapseTreeAndFossils<-function(data, timeFraction=0.5, endClades=0) {
 	Ne<-numeric(length(meduTree$tip.label))
 	
 	fossilDtt<-vector("list", length=length(meduTree$tip.label))
+	fullDtt<-vector("list", length=length(meduTree$tip.label))
+	
 	for(i in 1:length(meduTree$tip.label)) {
 		tip<-meduTree$tip.label[i]
 		clade<-strsplit(tip, split="\\.")[[1]]
@@ -558,8 +560,16 @@ collapseTreeAndFossils<-function(data, timeFraction=0.5, endClades=0) {
 		m<-match(fullClade[[i]][fossils], data$app[,1])
 		aa<-data$app[m,]
 		fossilDtt[[i]]<-getFossilDtt(aa)
-	}	
+    m2<-match(fullClade[[i]], data$app[,1])
+		bb<-data$app[m2,]
+    fullDtt[[i]]<-getFullDtt(bb)
+	}
+  # if the last entry is null then fossilDtt gets shortened; here is a fix
   length(fossilDtt)<-length(meduTree$tip.label)
+  # just to make sure
+	length(fullDtt)<-length(meduTree$tip.label)
+	
+  
 	if(!is.null(data$branchChanges)) { # mark branch changes
 	  bc<-data$branchChanges
 	  newbc<-bc
@@ -595,7 +605,7 @@ collapseTreeAndFossils<-function(data, timeFraction=0.5, endClades=0) {
 	  }
 	  data$branchChanges<-newbc
 	}
-	return(list(meduTree=meduTree, fossilDtt=fossilDtt))
+	return(list(meduTree=meduTree, fossilDtt=fossilDtt, fullDtt=fullDtt, t=data$t))
 }
 
 getFossilDtt<-function(dd) {
@@ -611,6 +621,19 @@ getFossilDtt<-function(dd) {
 		  nd[i]<-sum(dd[,2]<=times[i] & dd[,3]>times[i])
 	}
 	cbind(times, nd)
+}
+
+getFullDtt<-function(dd, t) {
+  if(dim(dd)[1]==0) { # one tip, no fossils
+    times<-sort(as.numeric(dd[2:3]))
+    nd<-c(1, 0)  
+  } else {
+    times<-sort(as.numeric(dd[,2:3]))
+    nd<-numeric(length(times))
+    for(i in 1:length(times)) 
+      nd[i]<-sum(dd[,2]<=times[i] & (dd[,3]>times[i] | is.na(dd[,3])))
+  }
+  cbind(times, nd)
 }
 
 getAllClades<-function(phy) 
@@ -655,14 +678,17 @@ prune.extinct.taxa<-function (phy, tol = .Machine$double.eps^0.5)
     res
 }
 
-plotDtt<-function(dtt) {
+plotDtt<-function(dtt, fullTime) {
   
   xrange<-NULL
   yrange<-NULL
   for(i in 1:length(dtt)) {
     if(!is.null(dtt[[i]])) {
-      tr<-range(dtt[[i]][,1])
-      dr<-range(dtt[[i]][,2])
+      x<-dtt[[i]][,1]
+      y<-dtt[[i]][,2]
+      y[is.na(y)]<-fullTime
+      tr<-range(x)
+      dr<-range(y)
       xrange<-range(c(tr, xrange))
       yrange<-range(c(dr, yrange))
     }
@@ -675,8 +701,31 @@ plotDtt<-function(dtt) {
       y<-dtt[[i]][,2]
       y<-c(y[1], y)
       s<-stepfun(x,y)
+      y[is.na(y)]<-fullTime
       lines(s, do.points=F, col=i)
     }
   }
   
 }
+
+makeMedusaRichness<-function(mm) { # mm is output from collapseTreeAndFossils
+  
+  richness<-data.frame(taxon=character(), exemplar=character(), n.taxa=numeric(), n.fossils=numeric(), f.time=numeric(), stringsAsFactors=F)
+  for(i in 1:length(mm$meduTree$tip.label)) {
+    whichBranch<-which(mm$meduTree$edge[,2]==i)
+    branchLength<-mm$meduTree$edge.length[whichBranch]
+    sampleTime<-runif(1, min=0, max=branchLength) # here time is measured back from the tips
+    forwardSampleTime<-mm$t-sampleTime
+    maxTime<-max(which(mm$fullDtt[[i]][,1]<forwardSampleTime))
+    diversity<-mm$fullDtt[[i]][maxTime,2]
+    richness[i,]<-c(mm$meduTree$tip.label[i], mm$meduTree$tip.label[i], mm$meduTree$phenotype[i], diversity, sampleTime)
+  }
+  richness[[3]]<-as.numeric(richness[[3]])
+  richness[[4]]<-as.numeric(richness[[4]])
+  richness[[5]]<-as.numeric(richness[[5]])
+  
+
+  return(richness)
+
+}
+

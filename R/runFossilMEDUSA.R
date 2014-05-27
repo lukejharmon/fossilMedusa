@@ -974,6 +974,7 @@ summarize.MEDUSA <- function(results, model=NULL, threshold=NULL, aic=F, plotTre
 			nodelabels(i, node= break.pts[i], frame = "c", font = 1, cex=0.5)
 		}
 	}
+  return(length(break.pts))
 }
 
 
@@ -1065,6 +1066,8 @@ pruneTree <- function(phy, richness)
         phy <- phy[[1]]
     }
     N <- Ntip(phy)
+    if(N < 7) stop("Medusa only works with trees that have 7 or more tip clades")
+    
     a <- -35.9410523803326
     b <- 6.7372587299747
     c <- -0.100615083407549
@@ -1077,3 +1080,4 @@ pruneTree <- function(phy, richness)
         y, ".\n\n", sep = "")
     return(y)
 }
+
