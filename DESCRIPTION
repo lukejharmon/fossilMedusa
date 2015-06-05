@@ -10,5 +10,5 @@ License: GPL (>= 2)
 Depends:
     ape,
     geiger,
-    multicore
+    parallel
 Roxygen: list(wrap = FALSE)
